@@ -3,21 +3,21 @@ type: sweep
 display_name: command_job-diabetes-sweep-mlflow
 experiment_name: diabetes-training
 
-# 1. Dataset passed to every trial
+# 💡 Move tags to the top level
+tags:
+  model_type: LogisticRegression
+
 inputs:
   diabetes_data:
     type: uri_file
     path: azureml:diabetes-data:1
 
-# 2. Hyperparameter search range
 search_space:
   reg_rate:
     type: uniform
     min_value: 0.01
     max_value: 1.0
 
-# 3. Strategy & Early Termination
-# Note: 'random' sampling is required when using Bandit early termination
 sampling_algorithm: bayesian
 
 early_termination:
@@ -37,11 +37,8 @@ limits:
 
 compute: azureml:azure-ml-cluster
 
-# 4. Trial specification
+# 💡 Clean trial section without 'tags'
 trial:
-  type: command
   code: .
   command: python train.py --training_data ${{inputs.diabetes_data}} --reg_rate ${{search_space.reg_rate}}
   environment: azureml:AzureML-sklearn-1.0-ubuntu20.04-py38-cpu@latest
-  tags: 
-    model_type: LogisticRegression
