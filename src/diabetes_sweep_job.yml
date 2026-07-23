@@ -40,7 +40,7 @@ compute: azureml:azure-ml-cluster
 # 4. Trial specification
 trial:
   type: command
-  code: ./src
+  code: .
   command: python train.py --training_data ${{inputs.diabetes_data}} --reg_rate ${{search_space.reg_rate}}
   environment: azureml:AzureML-sklearn-1.0-ubuntu20.04-py38-cpu@latest
   tags: 
