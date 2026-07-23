@@ -1,0 +1,41 @@
+compute: azureml:azure-ml-cluster
+early_termination:
+  delay_evaluation: 5
+  evaluation_interval: 1
+  slack_factor: 0.1
+  type: bandit
+inputs:
+  diabetes_data:
+    path: azureml:/subscriptions/33c8d544-ea9d-4419-9a28-26850c8e9d15/resourceGroups/ml-resource-group/providers/Microsoft.MachineLearningServices/workspaces/azure-ml/data/diabetes-data/versions/1
+    type: uri_file
+limits:
+  max_concurrent_trials: 2
+  max_total_trials: 10
+  timeout: 7200
+objective:
+  goal: maximize
+  primary_metric: training_accuracy_score
+sampling_algorithm: bayesian
+search_space:
+  reg_rate:
+    max_value: 1.0
+    min_value: 0.01
+    type: uniform
+trial:
+  code: azureml:/subscriptions/33c8d544-ea9d-4419-9a28-26850c8e9d15/resourceGroups/ml-resource-group/providers/Microsoft.MachineLearningServices/workspaces/azure-ml/codes/88dcc4cd-d735-4801-8350-de0c8adf1915/versions/1
+  command: python train.py --training_data ${{inputs.diabetes_data}} --reg_rate ${{inputs.reg_rate}}
+  display_name: command_job-diabetes-train-mlflow
+  environment: azureml:AzureML-sklearn-1.0-ubuntu20.04-py38-cpu@latest
+  inputs:
+    diabetes_data:
+      type: uri_file
+    reg_rate:
+      default: '0.01'
+      type: number
+  is_deterministic: true
+  name: azureml_anonymous
+  tags:
+    model_type: LogisticRegression
+  type: command
+  version: '1'
+type: sweep
