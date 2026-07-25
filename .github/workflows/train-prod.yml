@@ -64,7 +64,11 @@ jobs:
         run: |
           JOB_NAME="${{ steps.train.outputs.job_name }}"
           mkdir -p downloaded-job
-          az ml job download --name "$JOB_NAME" --output-name metrics_output --download-path downloaded-job
+          az ml job download \
+            --name "$JOB_NAME" \
+            --workspace-name "${{ vars.AZURE_WORKSPACE_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --output-name metrics_output --download-path downloaded-job
 
           METRICS_FILE=$(find downloaded-job -name metrics.json | head -n 1)
           if [ -z "$METRICS_FILE" ]; then
