@@ -93,7 +93,7 @@ def save_metrics(metrics, output_dir):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--training_data", dest='training_data', type=str)
-    parser.add_argument("--reg_rate", dest='reg_rate', type=float, default=0.006)
+    parser.add_argument("--reg_rate", dest='reg_rate', type=float, default=0.005)
     parser.add_argument("--metrics_output", dest='metrics_output', type=str, default=None)
     parser.add_argument("--model_output", dest='model_output', type=str, default=None)
     return parser.parse_args()
