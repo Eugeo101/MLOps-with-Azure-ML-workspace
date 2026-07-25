@@ -7,14 +7,17 @@ inputs:
 outputs:
   metrics_output:
     type: uri_folder
+  model_output:
+    type: uri_folder
 code: .
 command: >-
   python train-model-parameters.py
   --training_data ${{inputs.training_data}}
   --reg_rate ${{inputs.reg_rate}}
   --metrics_output ${{outputs.metrics_output}}
+  --model_output ${{outputs.model_output}}
 environment: azureml:AzureML-sklearn-1.0-ubuntu20.04-py38-cpu@latest
 compute: azureml:azure-ml-cluster
 experiment_name: diabetes-training
 display_name: diabetes-train-command
-description: diabetes training job
+description: diabetes training jobs

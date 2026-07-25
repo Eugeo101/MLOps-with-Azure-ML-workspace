@@ -31,6 +31,8 @@ def parse_args():
     parser.add_argument("--workspace", dest="workspace", required=True)
     parser.add_argument("--endpoint-name", dest="endpoint_name", default="diabetes-endpoint")
     parser.add_argument("--deployment-name", dest="deployment_name", default="blue")
+    parser.add_argument("--model_name", dest="model_name", required=True)
+    
 
     return parser.parse_args()
 
@@ -61,12 +63,12 @@ def create_or_update_deployment(
     ml_client: MLClient,
     endpoint_name: str,
     deployment_name: str,
+    model_name: str,
 ) -> ManagedOnlineDeployment:
-    model = Model(
-        path="./model",
-        type=AssetTypes.MLFLOW_MODEL,
-        description="MLflow diabetes classification model",
-    )
+    print(f"Fetching model '{model_name}:latest' from Azure ML registry...")
+    
+    # Get the latest version registered by your train-prod workflow
+    model = ml_client.models.get(name=model_name, label="latest")
 
     deployment = ManagedOnlineDeployment(
         name=deployment_name,
@@ -105,6 +107,7 @@ def main() -> None:
         ml_client=ml_client,
         endpoint_name=endpoint.name,
         deployment_name=args.deployment_name,
+        model_name=args.model_name,
     )
     print(f"Deployment state: {deployment.provisioning_state}")
 
