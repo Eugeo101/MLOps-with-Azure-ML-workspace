@@ -78,7 +78,7 @@ jobs:
             exit 1
           fi
 
-          STUDIO_URL=$(az ml job show --name "$JOB_NAME" --query services.Studio.endpoint -o tsv)
+          STUDIO_URL=$(az ml job show --name "$JOB_NAME" --workspace-name "${{ vars.AZURE_WORKSPACE_NAME }}" --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query services.Studio.endpoint -o tsv)
 
           echo "metrics_file=$METRICS_FILE" >> "$GITHUB_OUTPUT"
           echo "studio_url=$STUDIO_URL" >> "$GITHUB_OUTPUT"
