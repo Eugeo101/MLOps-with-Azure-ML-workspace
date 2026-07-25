@@ -5,6 +5,7 @@ from azure.ai.ml.entities import (
     DeploymentCollection,
     ManagedOnlineDeployment,
     ManagedOnlineEndpoint,
+    Environment,
     Model,
 )
 from azure.ai.ml.constants import AssetTypes
@@ -79,10 +80,36 @@ def create_or_update_deployment(
     # Get the latest version registered by your train-prod workflow
     model = ml_client.models.get(name=model_name, label="latest")
 
+    # --- ADD THIS ENVIRONMENT BLOCK ---
+    env = Environment(
+        name=f"{model_name}-inference-env",
+        description="Environment with data collection support",
+        image="mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest",
+        conda_file={
+            "name": "inference-env",
+            "channels": ["conda-forge"],
+            "dependencies": [
+                "python=3.10",
+                "pip",
+                {
+                    "pip": [
+                        "azureml-defaults",
+                        "azureml-ai-monitoring",  # <--- Fixes missing Collector
+                        "mlflow",
+                        "pandas",
+                        "scikit-learn",
+                        "numpy",
+                    ]
+                },
+            ],
+        },
+    )
+
     deployment = ManagedOnlineDeployment(
         name=deployment_name,
         endpoint_name=endpoint_name,
         model=model,
+        environment=env,  # <--- ADD THIS LINE
         instance_type="Standard_D2as_v4",
         instance_count=1,
         data_collector=get_data_collector(),
