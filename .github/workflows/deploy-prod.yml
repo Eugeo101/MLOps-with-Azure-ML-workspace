@@ -65,7 +65,8 @@ jobs:
             --resource-group "${{ steps.setup-azure.outputs.resource_group }}" \
             --workspace "${{ steps.setup-azure.outputs.workspace }}" \
             --endpoint-name "${{ steps.setup-azure.outputs.endpoint_name }}" \
-            --deployment-name "blue"
+            --deployment-name "blue" \
+            --model_name "diabetes-model"
 
       - name: Comment deployment result on pull request
         uses: actions/github-script@v7
