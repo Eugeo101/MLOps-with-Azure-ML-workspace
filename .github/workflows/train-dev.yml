@@ -32,8 +32,8 @@ jobs:
 
       - name: Configure Azure ML workspace defaults
         run: |
-          az configure --defaults group="${{ env.AZURE_RESOURCE_GROUP }}" workspace="${{ env.AZURE_WORKSPACE }}"
-          echo "CLI configured for RG: ${{ env.AZURE_RESOURCE_GROUP }} and Workspace: ${{ env.AZURE_WORKSPACE }}"
+          az configure --defaults group="${{ vars.AZURE_RESOURCE_GROUP }}" workspace="${{ vars.AZURE_WORKSPACE }}"
+          echo "CLI configured for RG: ${{ vars.AZURE_RESOURCE_GROUP }} and Workspace: ${{ vars.AZURE_WORKSPACE }}"
 
       - name: Run training job in dev and capture logs
         id: train
