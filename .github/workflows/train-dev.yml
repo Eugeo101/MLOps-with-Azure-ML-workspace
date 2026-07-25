@@ -44,8 +44,9 @@ jobs:
             -f src_environments/job.yml \
             --name "$JOB_NAME" \
             --set inputs.training_data.path=azureml:diabetes-dev-folder@latest \
-            --stream | tee training_output.log \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --workspace-name ${{ vars.AZURE_WORKSPACE_NAME }}
+            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            --workspace-name ${{ vars.AZURE_WORKSPACE_NAME }} \
+            --stream | tee training_output.log
 
       - name: Extract dev metrics from logs
         id: parse-metrics
