@@ -48,14 +48,23 @@ def get_ml_client(subscription_id: str, resource_group: str, workspace: str) -> 
 
 
 def ensure_endpoint(ml_client: MLClient, endpoint_name: str) -> ManagedOnlineEndpoint:
+    endpoint = ManagedOnlineEndpoint(
+        name=endpoint_name,
+        description="Online endpoint for MLflow diabetes model",
+        auth_mode="key",
+    )
     try:
-        return ml_client.online_endpoints.get(name=endpoint_name)
+        existing_endpoint = ml_client.online_endpoints.get(name=endpoint_name)
+        print(f"Endpoint '{endpoint_name}' state: {existing_endpoint.provisioning_state}")
+        
+        # If the endpoint is stuck or failed, re-provision it
+        if existing_endpoint.provisioning_state != "Succeeded":
+            print(f"Endpoint is in '{existing_endpoint.provisioning_state}' state. Re-creating endpoint...")
+            return ml_client.online_endpoints.begin_create_or_update(endpoint).result()
+        
+        return existing_endpoint
     except ResourceNotFoundError:
-        endpoint = ManagedOnlineEndpoint(
-            name=endpoint_name,
-            description="Online endpoint for MLflow diabetes model",
-            auth_mode="key",
-        )
+        print(f"Endpoint '{endpoint_name}' not found. Creating new endpoint...")
         return ml_client.online_endpoints.begin_create_or_update(endpoint).result()
 
 
