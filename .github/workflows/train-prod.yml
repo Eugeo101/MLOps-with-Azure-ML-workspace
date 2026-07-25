@@ -54,7 +54,10 @@ jobs:
 
       - name: Stream prod training job
         run: |
-          az ml job stream --name "${{ steps.train.outputs.job_name }} --workspace-name ${{ vars.AZURE_WORKSPACE_NAME }}"
+          az ml job stream \
+            --name "${{ steps.train.outputs.job_name }}" \
+            --workspace-name "${{ vars.AZURE_WORKSPACE_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}"
 
       - name: Download prod training outputs
         id: download
