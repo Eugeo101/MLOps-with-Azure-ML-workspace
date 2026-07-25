@@ -34,8 +34,8 @@ jobs:
 
       - name: Configure Azure ML workspace defaults
         run: |
-          az configure --defaults group="${{ vars.AZURE_RESOURCE_GROUP }}" workspace="${{ vars.AZURE_WORKSPACE }}"
-          echo "CLI configured for RG: ${{ vars.AZURE_RESOURCE_GROUP }} and Workspace: ${{ vars.AZURE_WORKSPACE }}"
+          az configure --defaults group="${{ vars.AZURE_RESOURCE_GROUP }}" workspace="${{ vars.AZURE_WORKSPACE_NAME }}"
+          echo "CLI configured for RG: ${{ vars.AZURE_RESOURCE_GROUP }} and Workspace: ${{ vars.AZURE_WORKSPACE_NAME }}"
 
       - name: Run training job in prod
         id: train
@@ -46,8 +46,8 @@ jobs:
             -f src_environments/job.yml \
             --name "$JOB_NAME" \
             --set inputs.training_data.path=azureml:diabetes-prod-folder@latest \
-            --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-            --workspace-name ${{ vars.AZURE_WORKSPACE_NAME }} \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --workspace-name "${{ vars.AZURE_WORKSPACE_NAME }}" \
             --query name -o tsv
 
           echo "job_name=$JOB_NAME" >> "$GITHUB_OUTPUT"
@@ -58,6 +58,23 @@ jobs:
             --name "${{ steps.train.outputs.job_name }}" \
             --workspace-name "${{ vars.AZURE_WORKSPACE_NAME }}" \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}"
+
+      - name: Register trained model in Azure ML
+        id: register-model
+        run: |
+          JOB_NAME="${{ steps.train.outputs.job_name }}"
+          echo "Registering model output from job: $JOB_NAME"
+          
+          MODEL_VERSION=$(az ml model create \
+            --name diabetes-model \
+            --path "azureml://jobs/$JOB_NAME/outputs/model_output" \
+            --type mlflow_model \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --workspace-name "${{ vars.AZURE_WORKSPACE_NAME }}" \
+            --query version -o tsv)
+
+          echo "model_version=$MODEL_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Registered model 'diabetes-model' as version $MODEL_VERSION"
 
       - name: Download prod training outputs
         id: download
@@ -108,6 +125,7 @@ jobs:
             const auc = '${{ steps.parse-metrics.outputs.prod_auc }}';
             const jobName = '${{ steps.train.outputs.job_name }}';
             const studioUrl = '${{ steps.download.outputs.studio_url }}';
+            const modelVersion = '${{ steps.register-model.outputs.model_version }}';
 
             const prNumber = context.issue.number;
 
@@ -115,6 +133,10 @@ jobs:
             body += '\n\n**Azure ML job**';
             body += `\n- Name: ${jobName}`;
             if (studioUrl) body += `\n- Studio: ${studioUrl}`;
+
+            body += '\n\n**Registered Model**';
+            body += `\n- Name: \`diabetes-model\``;
+            body += `\n- Version: \`${modelVersion}\``;
 
             body += '\n\n**Prod evaluation metrics**';
             body += `\n- Accuracy: ${acc}`;
