@@ -57,6 +57,10 @@ jobs:
           echo "workspace=$WORKSPACE_NAME" >> "$GITHUB_OUTPUT"
           echo "endpoint_name=$ENDPOINT_NAME" >> "$GITHUB_OUTPUT"
 
+      - name: Download model artifact from Azure ML job
+        run: |
+          az ml job download --name "${{ steps.train.outputs.job_name }}" --output-name "model" --download-path ./model --resource-group "${{ steps.setup-azure.outputs.resource_group }}" --workspace-name "${{ steps.setup-azure.outputs.workspace }}"
+
       - name: Deploy model to managed online endpoint
         id: deploy
         run: |
